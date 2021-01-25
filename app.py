@@ -8,17 +8,19 @@ app = FlaskAPI(__name__)
 
 
 def call_mavproxy(mav, src, addr):
-    subprocess.run(["screen", "-dmS", "mav", "%s"%mav, "--master", "%s"%src, "--out=%s"%addr])
+    subprocess.run(["screen", "-dmS", "mav", "%s" %
+                    mav, "--master", "%s" % src, "--out=%s" % addr])
 
 
-def get_iot_sample(sensorType, interval, number):
-    cmd = ["python3", "iot/iot_collector.py", "-t", "%s"%sensorType]
+def get_iot_sample(droneId, server_ip, server_port, username, password, sensorType, interval, number):
+    cmd = ["python3", "iot/iot_collector.py", "-d", "{}".format(droneId), "-s", server_ip,
+           "-p", server_port, "-u", username, "-w", password, "-t", "%s" % sensorType]
     if interval:
         cmd.append("-i")
-        cmd.append("%s"%interval)
+        cmd.append("%s" % interval)
     if number:
         cmd.append("-n")
-        cmd.append("%s"%number)
+        cmd.append("%s" % number)
     subprocess.run(cmd)
 
 
@@ -53,17 +55,23 @@ def exec_cmds():
             sensorType = None
             interval = None
             number = None
-            if "type" in cmd["body"]:
+            if "id" in cmd["body"] and "type" in cmd["body"] and "server" in cmd["body"] and "port" in cmd["body"] and "username" in cmd["body"] and "password" in cmd["body"]:
+                droneId = cmd["body"]["id"]
                 sensorType = cmd["body"]["type"]
+                server_ip = cmd["body"]["server"]
+                server_port = cmd["body"]["port"]
+                username = cmd["body"]["username"]
+                password = cmd["body"]["password"]
                 if "token" in cmd["body"]:
                     token = cmd["body"]["token"]
                 if "interval" in cmd["body"]:
                     interval = cmd["body"]["interval"]
                 if "number" in cmd["body"]:
                     number = cmd["body"]["number"]
-                Thread(target=get_iot_sample, args=(sensorType, interval, number,)).start()
+                Thread(target=get_iot_sample, args=(droneId, server_ip, server_port,
+                                                    username, password, sensorType, interval, number,)).start()
             else:
-                error_messges.append('Missing sensor type')
+                error_messges.append('Missing required arguments')
     if len(error_messges) > 0:
         return "\n".join(error_messges), 400
     else:
@@ -104,7 +112,8 @@ def get_iot_data():
             interval = request.data["interval"]
         if "number" in request.data:
             number = request.data["number"]
-        Thread(target=get_iot_sample, args=(sensorType, interval, number,)).start()
+        Thread(target=get_iot_sample, args=(
+            sensorType, interval, number,)).start()
         return {"started": True}
     else:
         return 'Sensor type (type) is not specified in QR-code', 400

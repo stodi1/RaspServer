@@ -17,12 +17,12 @@ $ git clone git@github.com:stodi1/RaspServer.git
 ```
 b. Download the project to your computer and copy the files to your Raspberry PI (for instance, using scp).
 ```sh
-scp -r <PATH_TO_DOWNLOADED_PROJECT> <DIR_IN_THE_RASPBERRY>
+$ scp -r <PATH_TO_DOWNLOADED_PROJECT> <DIR_IN_THE_RASPBERRY>
 ```
 
 2. Access your Raspberry PI (using SSH), change directory to the project folder and trigger the installation process with
 ```sh
-./install.sh
+$ ./install.sh
 ```
 
 More information about the mobile application and the platform will be provided later.
